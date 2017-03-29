@@ -15,7 +15,7 @@ import java.util.Map;
 public class MultiHashBloomFilter implements IBloomFilter {
 
     final private static Integer DEFAULT_LIMIT = 65536;
-    final private static String DEFAULT_HASH_FUNCTION_PACKAGE = "com.yeeknet.bigdata.common.util.BloomFilter.hash.def";
+    final private static String DEFAULT_HASH_FUNCTION_PACKAGE = "link.se7en.common.utils.BloomFilter.hash.def";
 
     private Map<String,HashFunction> functions = new HashMap<>();
     private boolean slot[] = null;
