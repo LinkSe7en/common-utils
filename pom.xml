@@ -7,9 +7,14 @@
     <groupId>link.se7en</groupId>
     <artifactId>common-utils</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <url>https://github.com/LinkSe7en/common-utils</url>
 
     <name>common-utils.${project.version}</name>
     <packaging>jar</packaging>
+
+    <description>
+        some common utils
+    </description>
 
     <developers>
         <developer>
@@ -20,6 +25,14 @@
             <organization>timesBigdata</organization>
         </developer>
     </developers>
+
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <name>aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
+        </repository>
+    </repositories>
 
     <properties>
         <jdk.version>1.7</jdk.version>

@@ -1,5 +1,7 @@
 package link.se7en.common.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -11,9 +13,27 @@ import java.util.jar.JarFile;
 
 /**
  * Created by Link on 2016/5/4.
- * 获取包下所有类
+ * 包工具
  */
 public class PackageUtil {
+
+    public static String getMyPackage() {
+        Exception e = new Exception();
+        StackTraceElement[] stackTraces = e.getStackTrace();
+
+        StackTraceElement invokerElement = stackTraces[1];
+
+        String[] packages = invokerElement.getClassName().split("\\.");
+
+        StringBuilder sb = new StringBuilder();
+
+        for(int i = 0; i < packages.length - 1 ; i++) {
+            sb.append(packages[i]).append(".");
+        }
+        String packageName = sb.toString();
+        return StringUtils.left(packageName,packageName.length()-1);
+    }
+
     /**
      * 获取某包下（包括该包的所有子包）所有类
      * @param packageName 包名
