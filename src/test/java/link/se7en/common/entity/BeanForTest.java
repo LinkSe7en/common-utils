@@ -1,9 +1,13 @@
 package link.se7en.common.entity;
 
+import java.io.Serializable;
+
 /**
  * Created by Link on 2017/3/28.
  */
-public class BeanForTest extends JsonEntity {
+public class BeanForTest extends JsonEntity implements Serializable {
+    private static final long serialVersionUID = 2480959801151650281L;
+
     private String s;
     private Integer i;
     private Long l;

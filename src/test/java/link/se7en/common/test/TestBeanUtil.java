@@ -53,4 +53,25 @@ public class TestBeanUtil {
         BeanForTest bean = jsonToBean(jsonStr,BeanForTest.class);
         System.out.println(bean);// 在这里打断点，可以看到bean的属性已被注入！
     }
+
+    @Test
+    public void jsonEntityTest() throws ReflectiveOperationException {
+        BeanForTest bean = new BeanForTest();
+
+        bean.setS(RandomStringUtils.random(RandomUtils.nextInt(3,8),true,true));
+        bean.setI(RandomUtils.nextInt(0,10000));
+        bean.setL(RandomUtils.nextLong(0L,10000000L));
+        bean.setF(RandomUtils.nextFloat(0.0f,10000.0f));
+        bean.setD(RandomUtils.nextDouble(0.0d,10000000.0d));
+        bean.setB(RandomUtils.nextInt(0,1) == 0);
+        bean.setBy(RandomUtils.nextBytes(1)[0]);
+        bean.setC(RandomStringUtils.random(1).charAt(0));
+
+        String jsonStr = bean.toJsonStr();
+
+        System.out.println(jsonStr);
+
+        BeanForTest newBean = jsonToBean(jsonStr,BeanForTest.class);
+        System.out.println(newBean);// 在这里打断点，可以看到bean的属性已被注入！
+    }
 }
