@@ -16,7 +16,7 @@ import static link.se7en.common.utils.BeanUtil.jsonToBean;
 public class TestBeanUtil {
 
     @Test
-    public void csvTest() throws ReflectiveOperationException {
+    public void csvTest() {
         CsvFieldBind bind = new CsvFieldBind();
 
         bind.bind(0,"s").bind(1,"i").bind(2,"l").bind(3,"f").bind(4,"d")
@@ -27,7 +27,7 @@ public class TestBeanUtil {
     }
 
     @Test
-    public void jsonTest() throws ReflectiveOperationException {
+    public void jsonTest() {
         JSONObject json = new JSONObject();
         json.put("s", RandomStringUtils.random(RandomUtils.nextInt(3,8),true,true));
         json.put("i", RandomUtils.nextInt(0,10000));
@@ -47,7 +47,7 @@ public class TestBeanUtil {
     }
 
     @Test
-    public void jsonEntityTest() throws ReflectiveOperationException {
+    public void jsonEntityTest() {
         BeanForTest bean = new BeanForTest();
 
         bean.setS(RandomStringUtils.random(RandomUtils.nextInt(3,8),true,true));
