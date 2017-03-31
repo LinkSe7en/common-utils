@@ -2,7 +2,9 @@ package link.se7en.common.utils;
 
 
 import com.alibaba.fastjson.JSONObject;
+import link.se7en.common.entity.CsvFieldBind;
 import link.se7en.common.entity.JsonEntity;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -26,29 +28,19 @@ public class BeanUtil {
      * @param bind 绑定Map。每个Entry的key是该字段在csv中从0开始的序号，而value是字段名
      * @param <T> Bean类型泛型
      * @return 构造的bean
-     * @throws ReflectiveOperationException 反射相关异常
      */
-    public static <T> T csvToBean(String csvLine, String splitSymbol, Class<T> beanClass, Map<Integer,String> bind)
-            throws ReflectiveOperationException {
+    public static <T> T csvToBean(String csvLine, String splitSymbol, Class<T> beanClass, CsvFieldBind bind) {
         String[] split = csvLine.split(splitSymbol);
 
-        T instance = beanClass.newInstance();
+        T instance = newInstance(beanClass);
         for(Map.Entry<Integer,String> fieldInfo : bind.entrySet()) {
             Integer index = fieldInfo.getKey();
             String fieldName = fieldInfo.getValue();
 
-            // 获取字段类对象
-            Class fieldClass = beanClass.getDeclaredField(fieldName).getType();
-
             // 获取字符串值
             String stringValue = split[index];
 
-            // 获取对应的setter方法
-            Method setterMethod = beanClass.getMethod(toSetterMethodName(fieldName), fieldClass);
-            if(setterMethod == null) continue;
-
-            // 执行对应的setter方法。已通过测试！
-            invokeSetter(instance,setterMethod,fieldClass,stringValue);
+            invokeSetter(instance,beanClass,fieldName,stringValue);
         }
 
         return instance;
@@ -66,12 +58,11 @@ public class BeanUtil {
      * @param bind 绑定Map。每个Entry的key是该字段在csv中从0开始的序号，而value是字段名
      * @param <T> Bean类型泛型
      * @return 构造的bean
-     * @throws ReflectiveOperationException 反射相关异常
      */
-    public static <T> T jsonToBean(String jsonStr,Class<T> beanClass, Map<String,String> bind) throws ReflectiveOperationException {
+    public static <T> T jsonToBean(String jsonStr,Class<T> beanClass, Map<String,String> bind) {
         JSONObject json = JSONObject.parseObject(jsonStr);
 
-        T instance = beanClass.newInstance();
+        T instance = newInstance(beanClass);
         for (Map.Entry<String,String> entry : bind.entrySet()) {
             String jsonField = entry.getKey();
             String beanField = entry.getValue();
@@ -79,15 +70,7 @@ public class BeanUtil {
             // 获取字符串值
             String stringValue = json.get(jsonField).toString();
 
-            // 获取字段类对象
-            Class fieldClass = beanClass.getDeclaredField(beanField).getType();
-
-            // 获取对应的setter方法
-            Method setterMethod = beanClass.getMethod(toSetterMethodName(beanField), fieldClass);
-            if(setterMethod == null) continue;
-
-            // 执行对应的setter方法。已通过测试！
-            invokeSetter(instance,setterMethod,fieldClass,stringValue);
+            invokeSetter(instance,beanClass,beanField,stringValue);
         }
         return instance;
     }
@@ -104,30 +87,46 @@ public class BeanUtil {
      * @param beanClass bean类型
      * @param <T> Bean类型泛型。为了安全必须是JsonEntity的子类
      * @return 构造的bean
-     * @throws ReflectiveOperationException 反射相关异常
      */
-    public static <T extends JsonEntity> T jsonToBean(String jsonStr, Class<T> beanClass) throws ReflectiveOperationException {
+    public static <T extends JsonEntity> T jsonToBean(String jsonStr, Class<T> beanClass)  {
         JSONObject json = JSONObject.parseObject(jsonStr);
 
-        T instance = beanClass.newInstance();
+        T instance = newInstance(beanClass);
         for (Map.Entry<String,Object> entry : json.entrySet()) {
             String jsonField = entry.getKey();
             String stringValue = entry.getValue().toString();
 
-            // 获取字段类对象
-            Class fieldClass = beanClass.getDeclaredField(jsonField).getType();
+            invokeSetter(instance,beanClass,jsonField,stringValue);
+        }
 
-            // 获取对应的setter方法
-            Method setterMethod = beanClass.getMethod(toSetterMethodName(jsonField), fieldClass);
-            if(setterMethod == null) continue;
+        return instance;
+    }
 
-            // 执行对应的setter方法。已通过测试！
-            invokeSetter(instance,setterMethod,fieldClass,stringValue);
+    private static <T> T newInstance(Class<T> beanClass) {
+        T instance = null;
+        try {
+            instance = beanClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalArgumentException("create instance of " + beanClass.getSimpleName() + "failed. WTF?",e);
         }
         return instance;
     }
 
-    private static void invokeSetter(Object instance,Method setterMethod,Class fieldClass,String stringValue) throws ReflectiveOperationException {
+    private static <T> void invokeSetter(T instance, Class<T> beanClass , String field , String stringValue) {
+        try {
+            Class fieldClass = beanClass.getDeclaredField(field).getType();
+
+            Method setterMethod = beanClass.getMethod(toSetterMethodName(field), fieldClass);
+
+            invokeSetter(instance,setterMethod,fieldClass,stringValue);
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException(beanClass.getSimpleName() + " dose not have field " + field,e);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(beanClass.getSimpleName() + " field " + field + " dose not have setter" ,e);
+        }
+    }
+
+    private static void invokeSetter(Object instance,Method setterMethod,Class fieldClass,String stringValue) {
         try {
             if (fieldClass.equals(String.class)) {
                 setterMethod.invoke(instance, stringValue);
@@ -152,15 +151,15 @@ public class BeanUtil {
 
             throw new IllegalArgumentException(className + "." + methodName + " can not resolve type "
                     + fieldClass.getName() + ". please check your bind map",nfe);
+        } catch (ReflectiveOperationException roe) {
+            String className = setterMethod.getDeclaringClass().getSimpleName();
+            String methodName = setterMethod.getName();
+
+            throw new IllegalArgumentException("invoke " + className + "." + methodName + "failed. please check your bind map",roe);
         }
     }
 
     private static String toSetterMethodName(String fieldName) {
-        char cs[] = new char[fieldName.length()];
-        fieldName.getChars(0,fieldName.length(),cs,0);
-        cs[0] = Character.toString(cs[0]).toUpperCase().charAt(0);
-
-        return "set" + String.valueOf(cs);
+        return "set" + StringUtils.left(fieldName,1).toUpperCase() + StringUtils.right(fieldName,fieldName.length()-1);
     }
-
 }

@@ -2,12 +2,10 @@ package link.se7en.common.test;
 
 import com.alibaba.fastjson.JSONObject;
 import link.se7en.common.entity.BeanForTest;
+import link.se7en.common.entity.CsvFieldBind;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 import static link.se7en.common.utils.BeanUtil.csvToBean;
 import static link.se7en.common.utils.BeanUtil.jsonToBean;
@@ -19,16 +17,10 @@ public class TestBeanUtil {
 
     @Test
     public void csvTest() throws ReflectiveOperationException {
-        Map<Integer,String> bind = new TreeMap<>();
+        CsvFieldBind bind = new CsvFieldBind();
 
-        bind.put(0,"s");
-        bind.put(1,"i");
-        bind.put(2,"l");
-        bind.put(3,"f");
-        bind.put(4,"d");
-        bind.put(5,"b");
-        bind.put(6,"by");
-        bind.put(7,"c");
+        bind.bind(0,"s").bind(1,"i").bind(2,"l").bind(3,"f").bind(4,"d")
+                .bind(5,"b").bind(6,"by").bind(7,"c");
 
         BeanForTest bean = csvToBean("abc,123,123123123,111.111,1231.123123123,true,1,a", ",", BeanForTest.class, bind);
         System.out.println(bean);// 在这里打断点，可以看到bean的属性已被注入！
