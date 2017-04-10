@@ -28,3 +28,7 @@ HBase读写常用
 ### BloomFilter
 
 布隆过滤器，爬虫常用！
+
+### ResourceUtil
+
+代码中访问资源文件常用工具
